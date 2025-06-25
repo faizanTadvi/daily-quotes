@@ -9,7 +9,8 @@
       font-family: system-ui, sans-serif;
       margin: 2rem auto;
       max-width: 400px;
-      background: #f9f9f9;
+      /* Attractive and aesthetic gradient background */
+      background: linear-gradient(135deg, #f6d365 0%, #fda085 50%, #a1c4fd 100%);
       color: #222;
       line-height: 1.6;
     }
@@ -37,6 +38,30 @@
     li {
       margin-bottom: 0.5rem;
     }
+    form {
+      margin-top: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    input[type="text"], input[type="time"] {
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      background: #4caf50;
+      color: #fff;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    .reminder-list {
+      margin-top: 1rem;
+      padding-left: 1.2rem;
+    }
   </style>
 </head>
 <body>
@@ -45,10 +70,7 @@
       <h1>Motivational Quote</h1>
     </header>
     <section>
-      <blockquote>
-        "Success is the sum of small efforts, repeated day in and day out." <br>
-        <cite>– Robert Collier</cite>
-      </blockquote>
+      <blockquote id="daily-quote"></blockquote>
     </section>
     <section>
       <h2>Daily Study Reminders</h2>
@@ -60,5 +82,138 @@
         <li>Set clear goals for today</li>
       </ul>
     </section>
+    <section>
+      <h2>Add a Task Reminder</h2>
+      <form id="reminderForm" autocomplete="off">
+        <input type="text" id="task" placeholder="Task description" required>
+        <input type="time" id="time" required>
+        <button type="submit">Add Reminder</button>
+      </form>
+      <ul class="reminder-list" id="reminderList"></ul>
+    </section>
+    <section>
+      <h2>Zen Mode</h2>
+      <button id="zen-btn">Turn On Zen Mode</button>
+      <div id="zen-msg" style="display:none; margin-top:1rem; color:#4caf50; font-size:1.1rem;">
+        🧘 Take a break. Breathe and relax.
+      </div>
+      <audio id="zen-audio" loop>
+        <source src="C:\Users\ATIF\OneDrive\Desktop\dailyquotes\Full Song Mere Sohneya  Kabir Singh  Shahid K, Kiara A, Sandeep V  Sachet - Parampara  Irshad K - T-Series.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+      </audio>
+    </section>
   </main>
+  <script>
+    // Request notification permission on page load
+    if ('Notification' in window && Notification.permission !== 'granted') {
+      Notification.requestPermission();
+    }
+
+    const form = document.getElementById('reminderForm');
+    const reminderList = document.getElementById('reminderList');
+    let reminders = [];
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const task = document.getElementById('task').value.trim();
+      const time = document.getElementById('time').value;
+      if (!task || !time) return;
+
+      // Calculate reminder time
+      const now = new Date();
+      const [hours, minutes] = time.split(':').map(Number);
+      const reminderTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0, 0);
+
+      // If time is in the past, set for tomorrow
+      if (reminderTime < now) {
+        reminderTime.setDate(reminderTime.getDate() + 1);
+      }
+
+      const timeout = reminderTime - now;
+
+      // Schedule the reminder
+      const reminder = { task, time, timeoutId: null };
+      reminder.timeoutId = setTimeout(() => {
+        showReminder(task, time);
+      }, timeout);
+
+      reminders.push(reminder);
+      addReminderToList(task, time);
+
+      form.reset();
+    });
+
+    function addReminderToList(task, time) {
+      const li = document.createElement('li');
+      li.textContent = `${task} at ${time}`;
+      reminderList.appendChild(li);
+    }
+
+    function showReminder(task, time) {
+      // Show browser notification if allowed, else use alert
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification('Study Reminder', {
+          body: `${task} (${time})`,
+        });
+      } else {
+        alert(`Reminder: ${task} (${time})`);
+      }
+    }
+
+    const quotes = [
+  "Success is the sum of small efforts, repeated day in and day out. – Robert Collier",
+  "The future depends on what you do today. – Mahatma Gandhi",
+  "Don’t watch the clock; do what it does. Keep going. – Sam Levenson",
+  "The secret of getting ahead is getting started. – Mark Twain",
+  "Believe you can and you’re halfway there. – Theodore Roosevelt"
+];
+
+// Function to get the quote index based on the day
+function getQuoteIndex() {
+  const now = new Date();
+  // Use the number of days since a fixed date as the index
+  const base = new Date(2024, 0, 1); // Jan 1, 2024
+  // If before 10am, use yesterday's quote
+  if (now.getHours() < 10) {
+    now.setDate(now.getDate() - 1);
+  }
+  const diffDays = Math.floor((now - base) / (1000 * 60 * 60 * 24));
+  return diffDays % quotes.length;
+}
+
+// Function to update the quote
+function updateQuote() {
+  const quoteElem = document.getElementById('daily-quote');
+  quoteElem.textContent = quotes[getQuoteIndex()];
+}
+
+// Update quote on load
+updateQuote();
+
+// Set interval to check every minute if it's 10am and update
+setInterval(updateQuote, 60 * 1000);
+
+    // Zen Mode functionality
+    const zenBtn = document.getElementById('zen-btn');
+    const zenMsg = document.getElementById('zen-msg');
+    const zenAudio = document.getElementById('zen-audio');
+    let zenOn = false;
+
+    zenBtn.addEventListener('click', () => {
+      zenOn = !zenOn;
+      if (zenOn) {
+        zenAudio.currentTime = 0;
+        zenAudio.volume = 0.3;
+        zenAudio.play();
+        zenMsg.style.display = 'block';
+        zenBtn.textContent = 'Turn Off Zen Mode';
+      } else {
+        zenAudio.pause();
+        zenAudio.currentTime = 0;
+        zenMsg.style.display = 'none';
+        zenBtn.textContent = 'Turn On Zen Mode';
+      }
+    });
+  </script>
 </body>
+</html>

@@ -1,0 +1,25 @@
+{
+  "name": "dailyquotes",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/faizanTadvi/daily-quotes.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/faizanTadvi/daily-quotes/issues"
+  },
+  "homepage": "https://github.com/faizanTadvi/daily-quotes#readme",
+  "description": "",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "node-cron": "^4.1.1"
+  }
+}

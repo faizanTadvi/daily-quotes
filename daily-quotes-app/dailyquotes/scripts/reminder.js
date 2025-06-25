@@ -91,3 +91,47 @@ document.addEventListener('DOMContentLoaded', function() {
         timeInput.value = '';
     });
 });
+
+// Daily quote functionality
+
+<script>
+async function fetchQuote() {
+  try {
+    const res = await fetch('http://localhost:3000/api/quote');
+    const data = await res.json();
+    document.getElementById('daily-quote').textContent = data.quote;
+  } catch (e) {
+    document.getElementById('daily-quote').textContent = "Could not load quote.";
+  }
+}
+
+// Fetch quote on page load
+fetchQuote();
+</script>
+
+// Zen mode functionality
+
+const zenBtn = document.getElementById('zen-btn');
+const zenMsg = document.getElementById('zen-msg');
+const zenAudio = document.getElementById('zen-audio');
+let zenOn = false;
+
+zenBtn.addEventListener('click', () => {
+  zenOn = !zenOn;
+  if (zenOn) {
+    zenAudio.currentTime = 0;
+    zenAudio.volume = 0.3;
+    zenAudio.play().then(() => {
+      zenMsg.style.display = 'block';
+      zenBtn.textContent = 'Turn Off Zen Mode';
+    }).catch((e) => {
+      alert('Audio playback was blocked by your browser. Please interact with the page and try again.');
+      zenOn = false;
+    });
+  } else {
+    zenAudio.pause();
+    zenAudio.currentTime = 0;
+    zenMsg.style.display = 'none';
+    zenBtn.textContent = 'Turn On Zen Mode';
+  }
+});
