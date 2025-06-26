@@ -1,6 +1,7 @@
 const express = require('express');
 const cron = require('node-cron');
 const cors = require('cors');
+const path = require('path');
 
 const app = express();
 app.use(cors());
@@ -34,6 +35,9 @@ function setInitialQuote() {
   currentQuoteIndex = diffDays % quotes.length;
 }
 setInitialQuote();
+
+// Serve static files from "zenmode-audio" directory
+app.use('/zenmode-audio', express.static(path.join(__dirname, 'zenmode-audio')));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

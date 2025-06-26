@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', function () {
     Notification.requestPermission();
   }
 
+  // Reminder functionality
   const form = document.getElementById('reminderForm');
   const reminderList = document.getElementById('reminderList');
   let reminders = [];
@@ -56,6 +57,137 @@ document.addEventListener('DOMContentLoaded', function () {
       alert(`Reminder: ${task} (${time})`);
     }
   }
+
+  // Daily quote functionality
+  async function fetchQuote() {
+    try {
+      const res = await fetch('http://localhost:3000/api/quote');
+      const data = await res.json();
+      document.getElementById('daily-quote').textContent = data.quote;
+    } catch (e) {
+      document.getElementById('daily-quote').textContent = "Could not load quote.";
+    }
+  }
+  fetchQuote();
+
+  // Zen mode functionality
+  const zenBtn = document.getElementById('zen-btn');
+  const zenMsg = document.getElementById('zen-msg');
+  const zenAudio = document.getElementById('zen-audio');
+  const zenInstructions = document.getElementById('zen-instructions');
+  let zenOn = false;
+  let zenTimeout = null;
+  let instructionInterval = null;
+  const instructions = [
+    "Breathe in...",
+    "Hold...",
+    "Exhale slowly..."
+  ];
+
+  function setDarkZenBackground(on) {
+    document.body.style.transition = "background 0.7s";
+    if (on) {
+      document.body.style.background = "linear-gradient(135deg, #232526 0%, #414345 100%)";
+    } else {
+      document.body.style.background = "linear-gradient(135deg, #f6d365 0%, #fda085 50%, #a1c4fd 100%)";
+    }
+  }
+
+  function startZenInstructions() {
+    let idx = 0;
+    zenInstructions.style.display = "block";
+    zenInstructions.textContent = instructions[idx];
+    instructionInterval = setInterval(() => {
+      idx = (idx + 1) % instructions.length;
+      zenInstructions.textContent = instructions[idx];
+    }, 4000);
+  }
+
+  function stopZenInstructions() {
+    clearInterval(instructionInterval);
+    zenInstructions.style.display = "none";
+  }
+
+  zenBtn.addEventListener('click', () => {
+    if (!zenOn) {
+      // Ask user for meditation time
+      let minutes = prompt("How many minutes do you want to meditate?", "5");
+      minutes = parseInt(minutes, 10);
+      if (isNaN(minutes) || minutes < 1) {
+        alert("Please enter a valid number of minutes.");
+        return;
+      }
+
+      zenOn = true;
+      setDarkZenBackground(true);
+      zenMsg.style.display = 'block';
+      zenMsg.textContent = "🧘 Let's Start";
+      zenBtn.textContent = 'Zen Mode Running...';
+      zenBtn.disabled = true;
+
+      zenAudio.currentTime = 0;
+      zenAudio.volume = 0.3;
+      zenAudio.play().catch(() => {
+        alert('Audio playback was blocked by your browser. Please interact with the page and try again.');
+      });
+
+      startZenInstructions();
+
+      zenTimeout = setTimeout(() => {
+        // End Zen Mode
+        zenOn = false;
+        setDarkZenBackground(false);
+        zenMsg.style.display = 'block';
+        zenMsg.textContent = "✨ Welcome back";
+        zenBtn.textContent = 'Start Zen Mode';
+        zenBtn.disabled = false;
+        zenAudio.pause();
+        zenAudio.currentTime = 0;
+        stopZenInstructions();
+        setTimeout(() => {
+          zenMsg.style.display = 'none';
+        }, 4000);
+      }, minutes * 60 * 1000);
+
+    }
+  });
+
+  function startZenMode(minutes) {
+    const audio = document.getElementById('zen-audio');
+    const overlay = document.getElementById('zenOverlay');
+    const breatheText = document.getElementById('breatheText');
+
+    audio.currentTime = 0;
+    audio.volume = 0.3;
+    audio.play();
+
+    overlay.style.display = "flex";
+    breatheText.style.display = "block";
+
+    const instructions = [
+      "🌬️ Take a deep breath in...",
+      "😌 Hold it...",
+      "🌿 Now exhale slowly...",
+      "🌞 Relax your shoulders...",
+      "🧘 Feel the calm around you..."
+    ];
+    let index = 0;
+
+    // Loop through instructions every 4 seconds
+    const instructionInterval = setInterval(() => {
+      breatheText.textContent = instructions[index % instructions.length];
+      index++;
+    }, 4000);
+
+    // Stop meditation after selected time
+    setTimeout(() => {
+      clearInterval(instructionInterval);
+      audio.pause();
+      audio.currentTime = 0;
+      overlay.style.display = "none";
+      alert("Welcome back 🌞 Hope you feel refreshed!");
+    }, minutes * 60000);
+  }
 });
 // This file contains the JavaScript code to handle the reminder functionality.
 // It includes functions to add tasks, set timers, and trigger pop-up notifications at the specified times.
@@ -90,48 +222,4 @@ document.addEventListener('DOMContentLoaded', function() {
         taskInput.value = '';
         timeInput.value = '';
     });
-});
-
-// Daily quote functionality
-
-<script>
-async function fetchQuote() {
-  try {
-    const res = await fetch('http://localhost:3000/api/quote');
-    const data = await res.json();
-    document.getElementById('daily-quote').textContent = data.quote;
-  } catch (e) {
-    document.getElementById('daily-quote').textContent = "Could not load quote.";
-  }
-}
-
-// Fetch quote on page load
-fetchQuote();
-</script>
-
-// Zen mode functionality
-
-const zenBtn = document.getElementById('zen-btn');
-const zenMsg = document.getElementById('zen-msg');
-const zenAudio = document.getElementById('zen-audio');
-let zenOn = false;
-
-zenBtn.addEventListener('click', () => {
-  zenOn = !zenOn;
-  if (zenOn) {
-    zenAudio.currentTime = 0;
-    zenAudio.volume = 0.3;
-    zenAudio.play().then(() => {
-      zenMsg.style.display = 'block';
-      zenBtn.textContent = 'Turn Off Zen Mode';
-    }).catch((e) => {
-      alert('Audio playback was blocked by your browser. Please interact with the page and try again.');
-      zenOn = false;
-    });
-  } else {
-    zenAudio.pause();
-    zenAudio.currentTime = 0;
-    zenMsg.style.display = 'none';
-    zenBtn.textContent = 'Turn On Zen Mode';
-  }
 });

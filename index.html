@@ -93,12 +93,15 @@
     </section>
     <section>
       <h2>Zen Mode</h2>
-      <button id="zen-btn">Turn On Zen Mode</button>
+      <label for="zen-minutes">Meditation time (minutes):</label>
+      <input type="number" id="zen-minutes" min="1" max="60" value="5" style="width:60px;">
+      <button id="zen-btn">Start Zen Mode</button>
       <div id="zen-msg" style="display:none; margin-top:1rem; color:#4caf50; font-size:1.1rem;">
-        🧘 Take a break. Breathe and relax.
+        🧘 Let's Start
       </div>
+      <div id="zen-instructions" style="display:none; margin-top:1rem; color:#fff; font-size:1.3rem; text-align:center;"></div>
       <audio id="zen-audio" loop>
-        <source src="C:\Users\ATIF\OneDrive\Desktop\dailyquotes\Full Song Mere Sohneya  Kabir Singh  Shahid K, Kiara A, Sandeep V  Sachet - Parampara  Irshad K - T-Series.mp3" type="audio/mpeg">
+        <source src="zenmode-audio/calmmusic.mp3" type="audio/mpeg">
         Your browser does not support the audio element.
       </audio>
     </section>
@@ -197,23 +200,87 @@ setInterval(updateQuote, 60 * 1000);
     const zenBtn = document.getElementById('zen-btn');
     const zenMsg = document.getElementById('zen-msg');
     const zenAudio = document.getElementById('zen-audio');
+    const zenMinutesInput = document.getElementById('zen-minutes');
+    const zenInstructions = document.getElementById('zen-instructions');
     let zenOn = false;
+    let zenTimeout = null;
+    let instructionInterval = null;
+    const instructions = [
+      "Breathe in...",
+      "Hold...",
+      "Exhale slowly..."
+    ];
+
+    function setDarkZenBackground(on) {
+      document.body.style.transition = "background 0.7s";
+      if (on) {
+        // Changed to your requested gradient
+        document.body.style.backgroundColor = "#310e68";
+        document.body.style.backgroundImage = "linear-gradient(316deg, #310e68 0%, #5f0f40 74%)";
+      } else {
+        document.body.style.background = "linear-gradient(135deg, #f6d365 0%, #fda085 50%, #a1c4fd 100%)";
+      }
+    }
+
+    function startZenInstructions() {
+      let idx = 0;
+      zenInstructions.style.display = "block";
+      zenInstructions.textContent = instructions[idx];
+      instructionInterval = setInterval(() => {
+        idx = (idx + 1) % instructions.length;
+        zenInstructions.textContent = instructions[idx];
+      }, 4000);
+    }
+
+    function stopZenInstructions() {
+      clearInterval(instructionInterval);
+      zenInstructions.style.display = "none";
+    }
 
     zenBtn.addEventListener('click', () => {
-      zenOn = !zenOn;
-      if (zenOn) {
+      if (!zenOn) {
+        // Start Zen Mode
+        let minutes = parseInt(zenMinutesInput.value, 10);
+        if (isNaN(minutes) || minutes < 1) minutes = 5;
+
+        zenOn = true;
+        setDarkZenBackground(true);
+        zenMsg.style.display = 'block';
+        zenMsg.textContent = "🧘 Let's Start";
+        zenBtn.textContent = 'Zen Mode Running...';
+        zenBtn.disabled = true;
+        zenMinutesInput.disabled = true;
+
         zenAudio.currentTime = 0;
         zenAudio.volume = 0.3;
-        zenAudio.play();
-        zenMsg.style.display = 'block';
-        zenBtn.textContent = 'Turn Off Zen Mode';
-      } else {
-        zenAudio.pause();
-        zenAudio.currentTime = 0;
-        zenMsg.style.display = 'none';
-        zenBtn.textContent = 'Turn On Zen Mode';
+        zenAudio.play().catch(() => {
+          alert('Audio playback was blocked by your browser. Please interact with the page and try again.');
+        });
+
+        startZenInstructions();
+
+        zenTimeout = setTimeout(() => {
+          // End Zen Mode
+          zenOn = false;
+          setDarkZenBackground(false);
+          zenMsg.style.display = 'block';
+          zenMsg.textContent = "✨ Welcome back";
+          zenBtn.textContent = 'Start Zen Mode';
+          zenBtn.disabled = false;
+          zenMinutesInput.disabled = false;
+          zenAudio.pause();
+          zenAudio.currentTime = 0;
+          stopZenInstructions();
+          setTimeout(() => {
+            zenMsg.style.display = 'none';
+          }, 4000);
+        }, minutes * 60 * 1000);
+
       }
     });
+
+    // Optional: If user reloads, reset background
+    window.addEventListener('beforeunload', () => setDarkZenBackground(false));
   </script>
 </body>
 </html>

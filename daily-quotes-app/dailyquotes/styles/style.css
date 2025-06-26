@@ -69,3 +69,27 @@ button {
 button:hover {
   background-color: #45a049;
 }
+
+/* Add a dark gradient background to the Zen Mode screen */
+#zenOverlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 1000;
+  background: linear-gradient(to bottom, #0f0f0f, #1a1a1a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Add breathing text animation that fades in and out */
+@keyframes breatheFade {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+#breatheText {
+  font-size: 2rem;
+  color: #fff;
+  animation: breatheFade 4s infinite ease-in-out;
+  text-align: center;
+}
