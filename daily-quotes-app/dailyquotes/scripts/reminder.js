@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // Daily quote functionality
   async function fetchQuote() {
     try {
-      const res = await fetch('http://localhost:3000/api/quote');
+      const res = await fetch(' https://daily-quotes-8d6m.onrender.com');
       const data = await res.json();
       document.getElementById('daily-quote').textContent = data.quote;
     } catch (e) {
